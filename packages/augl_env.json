@@ -1,0 +1,11 @@
+{
+  "path": "$HOUDINI_PACKAGE_PATH/..",
+  "env": [
+    {
+      "AUGL_HTT_BASEDIR": "$HOUDINI_PACKAGE_PATH/.."
+    },
+    {
+      "AUGL_HTT_REPO_NAME": "aufishgamelabs/houdini-talespire"
+    }
+  ]
+}
