@@ -1,4 +1,5 @@
 .venv
-__pycahce__/
+*.pyc
+__pycache__/
 
 /otls/backup
