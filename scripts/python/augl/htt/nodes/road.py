@@ -126,9 +126,7 @@ class RoadHeightNode(RoadNode):
             to_towns=self.parameters.snap_to_towns,
         )
 
-        heightfields = Volume.heightfields_from_geometry(
-            self.inputs[1].geometry()
-        )
+        heightfields = Volume.heightfields_from_geometry(self.inputs[1].geometry())
         if len(heightfields) != 1:
             raise ValueError(
                 f"Height field input must contain exactly one heightfield found {len(heightfields)}."
@@ -193,9 +191,7 @@ class RoadHeightNode(RoadNode):
         for col in range(len(self.mesh[0])):
             prev_pos = self.mesh[0][col]
             prev_dy = (
-                [prev_pos[1] / prev_pos.length()]
-                if prev_pos.length() > 0
-                else [0]
+                [prev_pos[1] / prev_pos.length()] if prev_pos.length() > 0 else [0]
             )
 
             for row in self.mesh[1:]:
@@ -246,9 +242,7 @@ class RoadHeightNode(RoadNode):
             print("No roads layer found for snapping.")
             return
 
-        heightfield = Volume.heightfields_from_geometry(
-            self.inputs[2].geometry()
-        )[0]
+        heightfield = Volume.heightfields_from_geometry(self.inputs[2].geometry())[0]
         for row in self.mesh:
             for pos in row:
                 if roads.sample(pos) > threshold:
@@ -285,9 +279,7 @@ class RoadWidthNode(RoadNode):
         for i, prim in enumerate(self.prims):
             self.render_col(i, prim)
 
-        polys = [
-            self.geo.createPolygon(is_closed=False) for _ in range(self.cols)
-        ]
+        polys = [self.geo.createPolygon(is_closed=False) for _ in range(self.cols)]
         for col in self.mesh:
             for row, p in enumerate(self.geo.createPoints(col)):
                 polys[row % self.cols].addVertex(p)
@@ -308,17 +300,16 @@ class RoadWidthNode(RoadNode):
         )
 
         self.mesh[0] = self._center_point_to_row(
-            prim.points()[1], prim.points()[0]
+            prim.points()[1], prim.points()[0], reverse=True
         )
         for row, pnt in enumerate(prim.points()[1:], start=1):
-            self.mesh[row] = self._center_point_to_row(
-                prim.points()[row - 1], pnt
-            )
+            self.mesh[row] = self._center_point_to_row(prim.points()[row - 1], pnt)
 
     def _center_point_to_row(
         self,
         start: hou.Point,
         end: hou.Point,
+        reverse: bool = False,
     ):
         angle = auglmath.perpendicular_direction(auglmath.direction(start, end))
 
@@ -327,15 +318,19 @@ class RoadWidthNode(RoadNode):
         dx = self.bed_width * math.cos(angle) / 2
         dz = self.bed_width * math.sin(angle) / 2
 
+        if reverse:
+            dx = -dx
+            dz = -dz
+
         dcx = dx + self.curb_width * math.cos(angle)
         dcz = dz + self.curb_width * math.sin(angle)
 
         row = [
-            hou.Vector3(x + dcx, 0, z + dcz),
-            hou.Vector3(x + dx, 0, z + dz),
-            hou.Vector3(x, 0, z),
-            hou.Vector3(x - dx, 0, z - dz),
-            hou.Vector3(x - dcx, 0, z - dcz),
+            hou.Vector3(x + dcx, y, z + dcz),
+            hou.Vector3(x + dx, y, z + dz),
+            hou.Vector3(x, y, z),
+            hou.Vector3(x - dx, y, z - dz),
+            hou.Vector3(x - dcx, y, z - dcz),
         ]
 
         if self.cols == 3:
