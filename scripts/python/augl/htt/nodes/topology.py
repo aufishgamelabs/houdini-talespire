@@ -91,6 +91,18 @@ class TopologyNode(Node):
             return curve_to_layers(
                 node, layer_offset=layer_offset, prim_offset=prim_offset
             )
+        if kind == "xform":
+            _, _, node_kind, _ = node.inputs()[0].type().nameComponents()
+            return self._node_to_layers(
+                node.inputs()[0],
+                (
+                    self._curve_to_layer
+                    if node_kind == "merge"
+                    else self._curve_to_layers
+                ),
+                layer_offset=layer_offset,
+                prim_offset=prim_offset,
+            )
 
         raise ValueError(f"Unsupported input node type: {kind}")
 
